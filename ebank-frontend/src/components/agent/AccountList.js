@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { FiCreditCard } from 'react-icons/fi';
+import { FiCreditCard, FiSettings, FiTrash2 } from 'react-icons/fi';
 
 function AccountList() {
   const [accounts, setAccounts] = useState([]);
@@ -39,6 +39,22 @@ function AccountList() {
     return <div>Chargement...</div>;
   }
 
+
+  const handleDelete = async (rib) => {
+  if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le compte ${rib} ?\n\nNote: Le compte doit être clôturé et avoir un solde nul.`)) {
+    return;
+  }
+
+  try {
+    await axios.delete(`/agent/comptes/${rib}`);
+    setError('');
+    fetchAccounts(); // Refresh the list
+    alert('Compte supprimé avec succès');
+  } catch (err) {
+    setError(err.response?.data?.message || 'Erreur lors de la suppression');
+  }
+};
+
   return (
     <div>
       <div className="page-header">
@@ -62,6 +78,7 @@ function AccountList() {
                 <th>Solde</th>
                 <th>Statut</th>
                 <th>Date création</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -96,6 +113,26 @@ function AccountList() {
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }}>
                     {new Date(account.dateCreation).toLocaleDateString('fr-FR')}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        className="btn btn-outline"
+                        style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                        onClick={() => window.location.href = `/agent/manage-account/${account.rib}`}
+                      >
+                        <FiSettings size={16} />
+                        Gérer
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                        onClick={() => handleDelete(account.rib)}
+                      >
+                        <FiTrash2 size={16} />
+                        Supprimer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

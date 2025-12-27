@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,4 +43,9 @@ public class Client {
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     private List<CompteBancaire> comptes = new ArrayList<>();
+
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    private LocalDateTime deletedAt;
 }

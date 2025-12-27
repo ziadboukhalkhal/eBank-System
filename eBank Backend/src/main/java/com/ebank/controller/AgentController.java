@@ -1,9 +1,6 @@
 package com.ebank.controller;
 
-import com.ebank.dto.ClientRequest;
-import com.ebank.dto.ClientResponse;
-import com.ebank.dto.CompteBancaireRequest;
-import com.ebank.dto.CompteBancaireResponse;
+import com.ebank.dto.*;
 import com.ebank.service.ClientService;
 import com.ebank.service.CompteBancaireService;
 import jakarta.validation.Valid;
@@ -66,5 +63,30 @@ public class AgentController {
     public ResponseEntity<CompteBancaireResponse> getCompteByRib(@PathVariable String rib) {
         CompteBancaireResponse compte = compteBancaireService.getCompteByRib(rib);
         return ResponseEntity.ok(compte);
+    }
+      @PutMapping("/clients/{id}")
+    public ResponseEntity<ClientResponse> updateClient(
+            @PathVariable Long id,
+            @Valid @RequestBody ClientRequest request) {
+        ClientResponse response = clientService.updateClient(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/comptes/{rib}/status")
+    public ResponseEntity<CompteBancaireResponse> changeAccountStatus(
+            @PathVariable String rib,
+            @Valid @RequestBody ChangeStatusRequest request) {
+        CompteBancaireResponse response = compteBancaireService.changeStatus(rib, request.getStatut());
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/clients/{id}")
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+        clientService.deleteClient(id);
+        return ResponseEntity.noContent().build();
+    }
+    @DeleteMapping("/comptes/{rib}")
+    public ResponseEntity<Void> deleteCompte(@PathVariable String rib) {
+        compteBancaireService.deleteCompte(rib);
+        return ResponseEntity.noContent().build();
     }
 }

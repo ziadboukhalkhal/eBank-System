@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,7 @@ public class CompteBancaireService {
     }
 
     public List<CompteBancaireResponse> getAllComptes() {
-        return compteBancaireRepository.findAll().stream()
+        return compteBancaireRepository.findAllActive().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -97,5 +98,36 @@ public class CompteBancaireService {
         }
 
         return response;
+    }
+    @Transactional
+    public CompteBancaireResponse changeStatus(String rib, StatutCompte newStatus) {
+        CompteBancaire compte = compteBancaireRepository.findByRib(rib)
+                .orElseThrow(() -> new ResourceNotFoundException("Compte non trouvé"));
+
+        compte.setStatut(newStatus);
+        compte = compteBancaireRepository.save(compte);
+
+        return mapToResponse(compte);
+    }
+
+    @Transactional
+    public void deleteCompte(String rib) {
+        CompteBancaire compte = compteBancaireRepository.findByRib(rib)
+                .orElseThrow(() -> new ResourceNotFoundException("Compte non trouvé"));
+
+        // Check if account has balance
+        if (compte.getSolde().compareTo(BigDecimal.ZERO) != 0) {
+            throw new BusinessException("Impossible de supprimer un compte avec un solde non nul");
+        }
+
+        // Check if account is already closed
+        if (compte.getStatut() != StatutCompte.CLOTURE) {
+            throw new BusinessException("Le compte doit être clôturé avant suppression");
+        }
+
+        // Soft delete
+        compte.setActive(false);
+        compte.setDeletedAt(LocalDateTime.now());
+        compteBancaireRepository.save(compte);
     }
 }

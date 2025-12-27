@@ -45,4 +45,8 @@ public class CompteBancaire {
         dateCreation = LocalDateTime.now();
         dateDerniereOperation = LocalDateTime.now();
     }
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    private LocalDateTime deletedAt;
 }

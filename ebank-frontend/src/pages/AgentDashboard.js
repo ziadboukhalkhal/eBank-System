@@ -5,7 +5,11 @@ import CreateClient from '../components/agent/CreateClient';
 import CreateAccount from '../components/agent/CreateAccount';
 import ClientList from '../components/agent/ClientList';
 import AccountList from '../components/agent/AccountList';
-import { FiUsers, FiCreditCard, FiList } from 'react-icons/fi';
+import SearchClient from '../components/agent/SearchClient';
+import SearchAccount from '../components/agent/SearchAccount';
+import EditClient from '../components/agent/EditClient';
+import ManageAccount from '../components/agent/ManageAccount';
+import { FiUsers, FiCreditCard, FiList, FiSearch } from 'react-icons/fi';
 import './AgentDashboard.css';
 
 function AgentDashboard() {
@@ -24,6 +28,10 @@ function AgentDashboard() {
               <FiUsers />
               <span>Nouveau client</span>
             </NavLink>
+            <NavLink to="/agent/search-client" className="sidebar-link">
+              <FiSearch />
+              <span>Rechercher client</span>
+            </NavLink>
             <NavLink to="/agent/accounts" className="sidebar-link">
               <FiList />
               <span>Comptes</span>
@@ -31,6 +39,10 @@ function AgentDashboard() {
             <NavLink to="/agent/create-account" className="sidebar-link">
               <FiCreditCard />
               <span>Nouveau compte</span>
+            </NavLink>
+            <NavLink to="/agent/search-account" className="sidebar-link">
+              <FiSearch />
+              <span>Rechercher compte</span>
             </NavLink>
           </nav>
         </aside>
@@ -40,8 +52,12 @@ function AgentDashboard() {
             <Route path="/" element={<ClientList />} />
             <Route path="/clients" element={<ClientList />} />
             <Route path="/create-client" element={<CreateClient />} />
+            <Route path="/edit-client/:id" element={<EditClient />} />
+            <Route path="/search-client" element={<SearchClient />} />
             <Route path="/accounts" element={<AccountList />} />
             <Route path="/create-account" element={<CreateAccount />} />
+            <Route path="/manage-account/:rib" element={<ManageAccount />} />
+            <Route path="/search-account" element={<SearchAccount />} />
           </Routes>
         </main>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { FiUsers, FiMail, FiCalendar, FiMapPin } from 'react-icons/fi';
+import { FiUsers, FiMail, FiCalendar, FiMapPin, FiEdit, FiTrash2 } from 'react-icons/fi';
 
 function ClientList() {
   const [clients, setClients] = useState([]);
@@ -26,63 +26,98 @@ function ClientList() {
     return <div>Chargement...</div>;
   }
 
+  const handleDelete = async (clientId, clientName) => {
+  if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le client ${clientName} ?`)) {
+    return;
+  }
+
+  try {
+    await axios.delete(`/agent/clients/${clientId}`);
+    setError('');
+    fetchClients(); // Refresh the list
+    alert('Client supprimé avec succès');
+  } catch (err) {
+    setError(err.response?.data?.message || 'Erreur lors de la suppression');
+  }
+};
+
+
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Liste des clients</h1>
-        <p className="page-description">Tous les clients enregistrés</p>
+  <div>
+    <div className="page-header">
+      <h1 className="page-title">Liste des clients</h1>
+      <p className="page-description">Tous les clients enregistrés</p>
+    </div>
+
+    {error && (
+      <div className="alert alert-error">
+        {error}
       </div>
+    )}
 
-      {error && (
-        <div className="alert alert-error">
-          {error}
-        </div>
-      )}
+    <div className="grid grid-2">
+      {clients.map((client) => (
+        <div key={client.id} className="card">
+          <div className="flex-between mb-2">
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>
+              {client.prenom} {client.nom}
+            </h3>
+            <span className="badge badge-info">ID: {client.numeroIdentite}</span>
+          </div>
 
-      <div className="grid grid-2">
-        {clients.map((client) => (
-          <div key={client.id} className="card">
-            <div className="flex-between mb-2">
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                {client.prenom} {client.nom}
-              </h3>
-              <span className="badge badge-info">ID: {client.numeroIdentite}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <FiMail size={16} />
+              <span>{client.email}</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <FiMail size={16} />
-                <span>{client.email}</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <FiCalendar size={16} />
+              <span>{new Date(client.dateAnniversaire).toLocaleDateString('fr-FR')}</span>
+            </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <FiCalendar size={16} />
-                <span>{new Date(client.dateAnniversaire).toLocaleDateString('fr-FR')}</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <FiMapPin size={16} />
+              <span>{client.adressePostale}</span>
+            </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <FiMapPin size={16} />
-                <span>{client.adressePostale}</span>
-              </div>
+            <div style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                Login: <strong style={{ color: 'var(--text-primary)' }}>{client.login}</strong>
+              </span>
+            </div>
 
-              <div style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                  Login: <strong style={{ color: 'var(--text-primary)' }}>{client.login}</strong>
-                </span>
-              </div>
+            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1, fontSize: '0.875rem', padding: '0.5rem' }}
+                onClick={() => window.location.href = `/agent/edit-client/${client.id}`}
+              >
+                <FiEdit size={16} />
+                Modifier
+              </button>
+              <button
+                className="btn btn-danger"
+                style={{ flex: 1, fontSize: '0.875rem', padding: '0.5rem' }}
+                onClick={() => handleDelete(client.id, `${client.prenom} ${client.nom}`)}
+              >
+                <FiTrash2 size={16} />
+                Supprimer
+              </button>
             </div>
           </div>
-        ))}
-      </div>
-
-      {clients.length === 0 && !error && (
-        <div className="card text-center" style={{ padding: '3rem' }}>
-          <FiUsers size={48} style={{ color: 'var(--text-secondary)', margin: '0 auto 1rem' }} />
-          <p style={{ color: 'var(--text-secondary)' }}>Aucun client enregistré</p>
         </div>
-      )}
+      ))}
     </div>
-  );
+
+    {clients.length === 0 && !error && (
+      <div className="card text-center" style={{ padding: '3rem' }}>
+        <FiUsers size={48} style={{ color: 'var(--text-secondary)', margin: '0 auto 1rem' }} />
+        <p style={{ color: 'var(--text-secondary)' }}>Aucun client enregistré</p>
+      </div>
+    )}
+  </div>
+);
 }
 
 export default ClientList;

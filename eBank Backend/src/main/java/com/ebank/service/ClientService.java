@@ -2,9 +2,7 @@ package com.ebank.service;
 
 import com.ebank.dto.ClientRequest;
 import com.ebank.dto.ClientResponse;
-import com.ebank.entity.Client;
-import com.ebank.entity.Role;
-import com.ebank.entity.User;
+import com.ebank.entity.*;
 import com.ebank.exception.BusinessException;
 import com.ebank.exception.ResourceNotFoundException;
 import com.ebank.repository.ClientRepository;
@@ -14,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -75,7 +74,7 @@ public class ClientService {
     }
 
     public List<ClientResponse> getAllClients() {
-        return clientRepository.findAll().stream()
+        return clientRepository.findAllActive().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -129,5 +128,45 @@ public class ClientService {
             response.setLogin(client.getUser().getLogin());
         }
         return response;
+    }
+    @Transactional
+    public ClientResponse updateClient(Long id, ClientRequest request) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé"));
+
+        // Check if email changed and is unique
+        if (!client.getEmail().equals(request.getEmail())) {
+            if (clientRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException("L'adresse email existe déjà");
+            }
+            client.setEmail(request.getEmail());
+        }
+
+        client.setNom(request.getNom());
+        client.setPrenom(request.getPrenom());
+        client.setDateAnniversaire(request.getDateAnniversaire());
+        client.setAdressePostale(request.getAdressePostale());
+
+        client = clientRepository.save(client);
+        return mapToResponse(client);
+    }
+    @Transactional
+    public void deleteClient(Long id) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé"));
+
+        // Check if client has active accounts
+        List<CompteBancaire> activeAccounts = client.getComptes().stream()
+                .filter(c -> c.getStatut() == StatutCompte.OUVERT)
+                .collect(Collectors.toList());
+
+        if (!activeAccounts.isEmpty()) {
+            throw new BusinessException("Impossible de supprimer un client avec des comptes actifs");
+        }
+
+        // Soft delete
+        client.setActive(false);
+        client.setDeletedAt(LocalDateTime.now());
+        clientRepository.save(client);
     }
 }

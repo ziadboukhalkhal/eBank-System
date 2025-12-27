@@ -27,6 +27,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.clear();
+      alert('Session invalide, veuillez vous authentifier');
       window.location.href = '/';
     }
     return Promise.reject(error);
