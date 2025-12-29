@@ -1,8 +1,10 @@
 package com.ebank.controller;
 
 import com.ebank.dto.*;
+import com.ebank.service.AgentOperationService;
 import com.ebank.service.ClientService;
 import com.ebank.service.CompteBancaireService;
+import com.ebank.util.RibGenerator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/agent")
@@ -19,9 +23,13 @@ public class AgentController {
 
     @Autowired
     private ClientService clientService;
+    @Autowired
+    private RibGenerator ribGenerator;
 
     @Autowired
     private CompteBancaireService compteBancaireService;
+    @Autowired
+    private AgentOperationService agentOperationService;
 
     @PostMapping("/clients")
     public ResponseEntity<ClientResponse> createClient(@Valid @RequestBody ClientRequest request) {
@@ -88,5 +96,30 @@ public class AgentController {
     public ResponseEntity<Void> deleteCompte(@PathVariable String rib) {
         compteBancaireService.deleteCompte(rib);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/generate-rib")
+    public ResponseEntity<Map<String, String>> generateRib() {
+        String rib = ribGenerator.generateRib();
+        Map<String, String> response = new HashMap<>();
+        response.put("rib", rib);
+        response.put("formatted", ribGenerator.formatRib(rib));
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/operations/deposit")
+    public ResponseEntity<String> deposit(@Valid @RequestBody DepositRequest request) {
+        agentOperationService.deposit(request);
+        return ResponseEntity.ok("Dépôt effectué avec succès");
+    }
+
+    @PostMapping("/operations/withdraw")
+    public ResponseEntity<String> withdraw(@Valid @RequestBody WithdrawRequest request) {
+        agentOperationService.withdraw(request);
+        return ResponseEntity.ok("Retrait effectué avec succès");
+    }
+
+    @PostMapping("/operations/transfer")
+    public ResponseEntity<String> transfer(@Valid @RequestBody VirementRequest request) {
+        agentOperationService.transfer(request);
+        return ResponseEntity.ok("Virement effectué avec succès");
     }
 }

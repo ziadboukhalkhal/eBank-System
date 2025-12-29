@@ -9,7 +9,10 @@ import SearchClient from '../components/agent/SearchClient';
 import SearchAccount from '../components/agent/SearchAccount';
 import EditClient from '../components/agent/EditClient';
 import ManageAccount from '../components/agent/ManageAccount';
-import { FiUsers, FiCreditCard, FiList, FiSearch } from 'react-icons/fi';
+import Deposit from '../components/agent/Deposit';
+import Withdraw from '../components/agent/Withdraw';
+import Transfer from '../components/agent/Transfer';
+import { FiUsers, FiCreditCard, FiList, FiSearch, FiPlusCircle, FiMinusCircle, FiArrowRight } from 'react-icons/fi';
 import './AgentDashboard.css';
 
 function AgentDashboard() {
@@ -20,9 +23,12 @@ function AgentDashboard() {
       <div className="dashboard-container">
         <aside className="dashboard-sidebar">
           <nav className="sidebar-nav">
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', padding: '0.5rem 1rem', textTransform: 'uppercase' }}>
+              Clients
+            </div>
             <NavLink to="/agent/clients" className="sidebar-link">
               <FiUsers />
-              <span>Clients</span>
+              <span>Liste clients</span>
             </NavLink>
             <NavLink to="/agent/create-client" className="sidebar-link">
               <FiUsers />
@@ -32,9 +38,13 @@ function AgentDashboard() {
               <FiSearch />
               <span>Rechercher client</span>
             </NavLink>
+
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', padding: '0.5rem 1rem', textTransform: 'uppercase', marginTop: '1rem' }}>
+              Comptes
+            </div>
             <NavLink to="/agent/accounts" className="sidebar-link">
               <FiList />
-              <span>Comptes</span>
+              <span>Liste comptes</span>
             </NavLink>
             <NavLink to="/agent/create-account" className="sidebar-link">
               <FiCreditCard />
@@ -43,6 +53,22 @@ function AgentDashboard() {
             <NavLink to="/agent/search-account" className="sidebar-link">
               <FiSearch />
               <span>Rechercher compte</span>
+            </NavLink>
+
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', padding: '0.5rem 1rem', textTransform: 'uppercase', marginTop: '1rem' }}>
+              Opérations
+            </div>
+            <NavLink to="/agent/deposit" className="sidebar-link">
+              <FiPlusCircle />
+              <span>Dépôt</span>
+            </NavLink>
+            <NavLink to="/agent/withdraw" className="sidebar-link">
+              <FiMinusCircle />
+              <span>Retrait</span>
+            </NavLink>
+            <NavLink to="/agent/transfer" className="sidebar-link">
+              <FiArrowRight />
+              <span>Virement</span>
             </NavLink>
           </nav>
         </aside>
@@ -58,6 +84,9 @@ function AgentDashboard() {
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/manage-account/:rib" element={<ManageAccount />} />
             <Route path="/search-account" element={<SearchAccount />} />
+            <Route path="/deposit" element={<Deposit />} />
+            <Route path="/withdraw" element={<Withdraw />} />
+            <Route path="/transfer" element={<Transfer />} />
           </Routes>
         </main>
       </div>

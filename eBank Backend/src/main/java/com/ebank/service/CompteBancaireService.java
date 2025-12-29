@@ -9,6 +9,7 @@ import com.ebank.exception.BusinessException;
 import com.ebank.exception.ResourceNotFoundException;
 import com.ebank.repository.ClientRepository;
 import com.ebank.repository.CompteBancaireRepository;
+import com.ebank.util.RibGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,9 @@ public class CompteBancaireService {
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private RibGenerator ribGenerator;
 
     @Transactional
     public CompteBancaireResponse createCompte(CompteBancaireRequest request) {
@@ -74,13 +78,7 @@ public class CompteBancaireService {
     }
 
     private boolean isValidRIB(String rib) {
-        // Simple validation: RIB should be 24 digits for Moroccan RIB
-        // You can implement more sophisticated validation based on your requirements
-        if (rib == null || rib.length() != 24) {
-            return false;
-        }
-
-        return rib.matches("\\d{24}");
+        return ribGenerator.isValidRib(rib);
     }
 
     private CompteBancaireResponse mapToResponse(CompteBancaire compte) {
