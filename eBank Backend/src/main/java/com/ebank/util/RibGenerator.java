@@ -1,5 +1,7 @@
 package com.ebank.util;
 
+import com.ebank.repository.CompteBancaireRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
@@ -8,28 +10,41 @@ import java.util.Random;
 @Component
 public class RibGenerator {
 
+    @Autowired
+    private CompteBancaireRepository compteBancaireRepository;
+
     private static final String[] BANK_CODES = {
-            "011", // Attijariwafa Bank
-            "230", // BMCE Bank
-            "007", // CIH Bank
-            "022", // Crédit du Maroc
-            "125", // Banque Populaire
-            "021", // BMCI
-            "080", // Al Barid Bank
-            "340", // Société Générale
-            "013", // Crédit Agricole
-            "111"  // Bank of Africa
+            "011", "230", "007", "022", "125",
+            "021", "080", "340", "013", "111"
     };
 
     /**
-     * Generate a valid Moroccan RIB (24 digits)
-     * Structure: BBB-CCC-AAAAAAAAAAAAAAAA-KK
-     * B = Bank code (3 digits)
-     * C = Branch code (3 digits)
-     * A = Account number (16 digits)
-     * K = Key (2 digits checksum)
+     * Generate a unique valid Moroccan RIB (24 digits)
+     * Ensures the RIB doesn't already exist in database
      */
     public String generateRib() {
+        String rib;
+        int attempts = 0;
+        int maxAttempts = 100; // Prevent infinite loop
+
+        do {
+            rib = generateRandomRib();
+            attempts++;
+
+            if (attempts >= maxAttempts) {
+                throw new RuntimeException(
+                        "Impossible de générer un RIB unique après " + maxAttempts + " tentatives"
+                );
+            }
+        } while (compteBancaireRepository.existsByRib(rib));
+
+        return rib;
+    }
+
+    /**
+     * Generate a random valid RIB without checking database
+     */
+    private String generateRandomRib() {
         Random random = new Random();
 
         // Select random bank code
@@ -77,21 +92,17 @@ public class RibGenerator {
 
     /**
      * Calculate RIB key using modulo 97 algorithm
-     * Using BigInteger to handle large numbers
      */
     private String calculateRibKey(String ribWithoutKey) {
         try {
-            // Use BigInteger for large number calculation
             BigInteger ribNumber = new BigInteger(ribWithoutKey);
             BigInteger modulo = new BigInteger("97");
 
-            // Calculate: 97 - (RIB mod 97)
             BigInteger remainder = ribNumber.mod(modulo);
             int key = 97 - remainder.intValue();
 
             return String.format("%02d", key);
         } catch (NumberFormatException e) {
-            // Fallback: if somehow the number is invalid, return "00"
             return "00";
         }
     }
